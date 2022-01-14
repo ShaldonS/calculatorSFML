@@ -5,19 +5,13 @@
 using namespace sf;
 using namespace std;
 
-float sfString_to_num(sf::String str) {
-	float num = 0.0f;
-
-	return num;
-}
-
 std::string calculate_expr(std::string str) {
 	std::string answer(""), tmp_str, signs;
-	int answer_int = 0;
-	std::vector<int> nums;
+	float answer_int = 0, fl_point = 0.0f;
+	std::vector<float> nums;
 	for (char ch : str) {
-		if (int(ch) <= 47 && int(ch) >= 40) {
-			nums.push_back(stoi(tmp_str));
+		if (int(ch) <= 47 && int(ch) >= 40 && ch != '.') {
+			nums.push_back(atof(tmp_str.c_str()));
 			tmp_str = "";
 			signs += ch;
 		}
@@ -28,16 +22,16 @@ std::string calculate_expr(std::string str) {
 	nums.push_back(stoi(tmp_str));
 	for (int i(0); i < signs.size(); ++i) {
 		if (signs[i] == '/') {
-			answer_int += (nums[i] / nums[i + 1]);
+			answer_int += static_cast<float>(nums[i] / nums[i + 1]);
 		}
 		if (signs[i] == '*') {
-			answer_int += (nums[i] * nums[i + 1]);
+			answer_int += static_cast<float>(nums[i] * nums[i + 1]);
 		}
 		if (signs[i] == '-') {
-			answer_int += (nums[i] - nums[i + 1]);
+			answer_int += static_cast<float>(nums[i] - nums[i + 1]);
 		}
 		if (signs[i] == '+') {
-			answer_int += (nums[i] + nums[i + 1]);
+			answer_int += static_cast<float>(nums[i] + nums[i + 1]);
 		}
 	}
 	answer = std::to_string(answer_int);
@@ -56,7 +50,7 @@ int main(int argc, char** argv) {
 
 	sf::Font font;
 	font.loadFromFile("C:/WINDOWS/Fonts/arial.ttf");
-	const int size_buttons = 19;
+	const int size_buttons = 20;
 	sf::Text buttons_text[size_buttons];
 	buttons_text[0].setString("7");
 	buttons_text[1].setString("8");
@@ -70,26 +64,33 @@ int main(int argc, char** argv) {
 	buttons_text[9].setString("2");
 	buttons_text[10].setString("3");
 	buttons_text[11].setString("-");
-	buttons_text[12].setString("+-");
+	buttons_text[12].setString(" ");
 	buttons_text[13].setString("0");
 	buttons_text[14].setString(".");
 	buttons_text[15].setString("+");
 	buttons_text[16].setString("(");
 	buttons_text[17].setString(")");
 	buttons_text[18].setString("=");
+	buttons_text[19].setString("Del");
 	for (int i(0); i < size_buttons; ++i) {
 		buttons_text[i].setFont(font);
 		buttons_text[i].setCharacterSize(24);
 		buttons_text[i].setFillColor(sf::Color::Black);
 		buttons_text[i].setStyle(sf::Text::Bold);
 	}
+	buttons_text[size_buttons-1].setCharacterSize(20);
 	RectangleShape buttons[size_buttons];
 	int x = 10.0f, y = 60.0f;
 	for(int i(0); i < size_buttons; ++i) {
 		buttons[i].setSize(Vector2f(40.0f, 40.0f));
 		buttons[i].setFillColor(Color(255, 255, 255));
 		buttons[i].setPosition(x, y);
-		buttons_text[i].setPosition(x+10.0f, y+5.0f);
+		if (i == size_buttons - 1) {
+			buttons_text[i].setPosition(x + 2.0f, y + 5.0f);
+		}
+		else {
+			buttons_text[i].setPosition(x + 15.0f, y + 5.0f);
+		}
 		x += 60.0f;
 		if ((i+1) % 4 == 0) {
 			x = 10.0f;
@@ -127,29 +128,10 @@ int main(int argc, char** argv) {
 
 					sf::String tmp_str;
 					int input_size = input.getSize();
-					if ((i + 1) % 4 == 0) { //when sign is not a num 
-						/*for (int j(0); j < input_size-1; ++j) {//for (auto ch : input){
-							tmp_str += input[j];
-						}
-						sign_to_calc.push_back(input[input_size - 1]);
-						std::string str = static_cast<std::string>(tmp_str); //tmp_str.operator std::string();
-						nums_to_calc.push_back(str);
-						*/
-						
-						//input.clear();
-					}
-					/*std::cout << "\nVECTOR OF NUMS: ";
-					for (std::string st : nums_to_calc) {
-						cout << st << " ";
-					}
-					std::cout << "\nVECTOR OF SIGNS: ";
-					for (char ch : sign_to_calc) {
-						cout << ch << " ";
-					}
-					std::cout << "\n";*/
+
 					buttons_text[i].setFillColor(Color::Red);
 					pos_button = i;
-					if (i == size_buttons - 1) {
+					if (i == size_buttons - 2) {
 						std::string str = static_cast<std::string>(input);
 						str.pop_back();
 						std::string s("");
@@ -158,15 +140,27 @@ int main(int argc, char** argv) {
 						text.setString(answer);
 						input.clear();
 					}
+					if (i == size_buttons - 1) {
+						input.clear();
+						text.setString(input);
+					}
 					break;
 				}
 			}
 			if (event.type == sf::Event::TextEntered)
 			{
 				input += event.text.unicode;
+				if (input.getSize() == 25) {					
+					text.setCharacterSize(18);
+				}
+				if (input.getSize() % 25 == 0) {
+					input += "\n";
+				}
+				if (input.getSize() > 100) {
+					input = "Too Large Num!";
+				}
 				text.setString(input);
 			}
-			//if (event.key.code == sf::Keyboard::)
 		}
 		window.draw(buttons_field);
 		window.draw(text);
@@ -179,36 +173,4 @@ int main(int argc, char** argv) {
 	}
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*#include "engine.h"
-
-int main() {
-	Engine engine;
-
-	engine.start();
-
-	return 0;
-}*/
 
